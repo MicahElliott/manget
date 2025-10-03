@@ -1,0 +1,28 @@
+#! /bin/zsh
+
+sect=1
+destdir=~/.local/share/man/man$sect
+host='https://github.com'
+host='https://raw.githubusercontent.com'
+
+proj=$1 # 'walles/moor'
+# TODO maybe use gh cli to fetch these
+exe=$2 # 'moor'
+cmdname=$3 # 'Moor Pager'
+mainbranch=main # FIXME how to know if main or master?
+
+# https://raw.githubusercontent.com/walles/moor/refs/heads/master/README.md
+readme=$host/$proj/refs/heads/$mainbranch/README.md
+destfile=$destdir/$exe.$sect.gz
+
+# eget $proj
+
+print "Fetching $readme to $destfile"
+# curl $readme | ronn --section $sect -r --name $cmdname --manual 'FIXME Manual Name' --pipe
+
+# TODO Upcase H2s
+# TODO Remove <code>
+
+curl --silent $readme |
+  ronn --section $sect -r --name $cmdname --manual $cmdname --pipe |
+  gzip > $destfile
