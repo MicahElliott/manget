@@ -1,4 +1,4 @@
-# manget -- fetch a remote readme as local man page
+# manget -- fetch and store a remote readme as local man page
 
 ## PURPOSE
 

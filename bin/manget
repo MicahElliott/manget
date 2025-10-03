@@ -1,17 +1,28 @@
 #! /bin/zsh
 
+mgver=20251003
+
 sect=1
 destdir=~/.local/share/man/man$sect
 host='https://github.com'
 host='https://raw.githubusercontent.com'
 
+if   [[ -z $1 ]]
+then print 'USAGE: manget owner/proj [exename]'; exit
+fi
+
+if [[ $1 = '--version' ]]; then print "manget v$mgver"; exit ; fi
+
 repo=$1 # 'walles/moor'
-org=$repo:h
+
 # TODO maybe use gh cli to fetch these
 if [[ -n $2 ]]; then exe=$2; else exe=$1:t; fi # 'moor'
 # cmdname=$3 # 'Moor Pager'
 # reldate='XXX' # FIXME get from gh maybe, but unreliable and may not match up
-ver=$($exe --version)
+
+print "Determining $exe version"
+ver=$($exe --version | head -1)
+org="${repo:h}ʼs $ver"
 
 print 'Determining default branch'
 mainbranch=$(curl -s "https://api.github.com/repos/$repo" |jq -r '.default_branch')
@@ -27,11 +38,12 @@ print "Fetching $readme to $destfile"
 
 # TODO Upcase H2s
 # TODO Remove <code>
+# TODO Remove Installation section
 
 # Alternative to ronn:
 # or use https://github.com/bmoneill/md2roff (golang)
 # or https://github.com/cpuguy83/go-md2man
 
 curl --silent $readme |
-  ronn --section $sect -r --name $exe --manual 'External User Commands' --organization $org --date $ver --pipe |
+  ronn --section $sect -r --name $exe --manual 'External User Commands' --organization $org --pipe |
   gzip > $destfile
