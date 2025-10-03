@@ -5,17 +5,22 @@ destdir=~/.local/share/man/man$sect
 host='https://github.com'
 host='https://raw.githubusercontent.com'
 
-proj=$1 # 'walles/moor'
+repo=$1 # 'walles/moor'
+org=$repo:h
 # TODO maybe use gh cli to fetch these
-exe=$2 # 'moor'
-cmdname=$3 # 'Moor Pager'
-mainbranch=main # FIXME how to know if main or master?
+if [[ -n $2 ]]; then exe=$2; else exe=$1:t; fi # 'moor'
+# cmdname=$3 # 'Moor Pager'
+# reldate='XXX' # FIXME get from gh maybe, but unreliable and may not match up
+ver=$($exe --version)
+
+print 'Determining default branch'
+mainbranch=$(curl -s "https://api.github.com/repos/$repo" |jq -r '.default_branch')
 
 # https://raw.githubusercontent.com/walles/moor/refs/heads/master/README.md
-readme=$host/$proj/refs/heads/$mainbranch/README.md
+readme=$host/$repo/refs/heads/$mainbranch/README.md
 destfile=$destdir/$exe.$sect.gz
 
-# eget $proj
+# eget $repo
 
 print "Fetching $readme to $destfile"
 # curl $readme | ronn --section $sect -r --name $cmdname --manual 'FIXME Manual Name' --pipe
@@ -23,6 +28,10 @@ print "Fetching $readme to $destfile"
 # TODO Upcase H2s
 # TODO Remove <code>
 
+# Alternative to ronn:
+# or use https://github.com/bmoneill/md2roff (golang)
+# or https://github.com/cpuguy83/go-md2man
+
 curl --silent $readme |
-  ronn --section $sect -r --name $cmdname --manual $cmdname --pipe |
+  ronn --section $sect -r --name $exe --manual 'External User Commands' --organization $org --date $ver --pipe |
   gzip > $destfile

@@ -1,4 +1,4 @@
-# manget
+# manget -- fetch a remote readme as local man page
 
 ## PURPOSE
 
@@ -85,8 +85,6 @@ exe='moor'
 curl $host/$proj/README.md |
   ronn --section $sect -r --name $cmdname --manual 'FIXME Manual Name' --pipe |
   gzip >$exe.$sect.gz
-# or use https://github.com/bmoneill/md2roff (golang)
-# or https://github.com/cpuguy83/go-md2man
 ```
 
 I'm planning to write a small go-based utility to do these steps and avoid
@@ -95,15 +93,22 @@ having to install `ronn` etc. But for now there's a little POC Zsh script
 
 ## INSTALLATION
 
+There are presently some deps to install manually:
+
+- [ronn]
+
+`manget` is just a tiny Zsh script. Put it on your `PATH`.
+
 ```shell
 % eget   micahelliott/manget
-% manget micahelliott/manget
+OR
+% wget https://raw.githubusercontent.com/MicahElliott/manget/refs/heads/main/bin/manget
 ```
 
 ## USAGE
 
 ```shell
-% manget walles/moor
+% manget walles/moor 
 ```
 
 ### Zsh `run-help` setup
@@ -123,7 +128,7 @@ You can set up Zsh to auto-run `man` (and retain your whole command line):
 % man ./myapp.1
 ```
 
-## MAN PRIMER
+## PRIMER ON MAN
 
 Man pages live in places like `/usr/share/man/...` and are automatically found
 by `man`. More are enabled via `MANPATH` (works like `PATH`).
@@ -131,14 +136,21 @@ by `man`. More are enabled via `MANPATH` (works like `PATH`).
 The [ronn]() page describes well why man pages are so valuable.
 
 ```shell
-man man
+% man man
 
-% man 3 ls # the XXX listing
+% man 1 ls # the section-1 page listing
 
 % man -f crontab # See what sections are available
 crontab (1) - maintains crontab files for individual users
 crontab (5) - files used to schedule the execution of programs
 ```
+
+## ORGANIZING YOUR MAN PAGES
+
+You can organize your docs into multiple "pages", or just have a single page
+that contains "sections", typically `(1)` and maybe `(5)`.
+
+### Multiple pages
 
 Some commands break their docs into multiple man pages. Here's Zsh:
 
@@ -150,21 +162,31 @@ zshparam     zshtcpsys    zshzle         zshcalsys    zshcompsys   zshcontrib
 zshmisc      zshoptions   zshroadmap     zshzftpsys   zshall
 ```
 
-### Sections
+### Man Sections
 
-Most organize into "sections", though the default section `(1)` is usually the
-one you're looking for. (C, Perl, and maybe others use man pages to document
-libs in sections like `(3)`). Specs, formats, conventions go in `(5)`. Use
-`man 5 crontab` to see a spec.
+Most projects organize docs into "sections", though the default section `(1)` is
+usually the one you're looking for. (C, Perl, and maybe others use man pages
+to document libs in sections like `(3)`). Specs, formats, conventions go in
+`(5)`. Use `man 5 crontab` to see a spec.
+
+### Page Sections
+
+Not to be confused with the "sections" above! These are just the `H2`s in your
+doc.
 
 From `man man`:
 > Conventional section names include NAME, SYNOPSIS, CONFIGURATION,
 > DESCRIPTION, OPTIONS, EXIT STATUS, RETURN VALUE, ERRORS, ENVIRONMENT, FILES,
 > VERSIONS, CONFORMING TO, NOTES, BUGS, EXAMPLE, AUTHORS, and SEE ALSO.
 
-These are also a great rubric for READMEs! (though may need to add INSTALLATION)
+These are also a great rubric for READMEs! (though may need to add
+INSTALLATION)
 
-## Pagers
+## EXEMPLARY MAN PAGES
+
+- `jq`
+
+## PAGERS
 
 `man` runs its output through a "pager". You can change this by exporting
 `PAGER`. Here are some common ones:
@@ -190,17 +212,14 @@ see [example config](https://github.com/dLuna/config/blob/master/.lesskey).
 
 Or you could use `info` which falls back to man pages when no info page exists.
 
-## Setting up colors
+## SETTING UP COLORS
 
 https://unix.stackexchange.com/questions/119/colors-in-man-pages
 
-
-## Conversion from Markdown to ROFF
+## CONVERSION FROM MARKDOWN TO ROFF
 
 - [ronn](https://github.com/rtomayko/ronn)
   Install: `sudo dnf install rubygem-ronn-ng`
-  
-
 
 - `pandoc README.md -s -t man >myproj.1`
 
@@ -221,4 +240,14 @@ As part of releasing your binaries, you can also push a `docs.tgz` file.
 
 ## RELATED TOOLING
 
+There is already a way to view a github project readme. It looks pretty and
+does the job. However, it's slow, requires authentication, is tedious to
+type, is not discoverable, and has to fetch every time you reference it.
+
+```shell
+% gh repo view rtomayko/ronn
+```
+
 - [eget]()
+- [tldr]()
+- [gh]()
