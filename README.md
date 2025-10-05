@@ -1,22 +1,37 @@
 # manget -- fetch and store a remote readme as local man page
 
-## PURPOSE
+## SYNOPSIS
+
+```shell
+manget [options]
+manget some/github-repo [exename]
+```
+
+## DESCRIPTION
 
 Fetch a man page from project `README.md` file, convert it to roff (man page
 format), and store it locally (default `~/.local/share/man/...`) for instant
 viewing.
 
-This could just be a wrapper around `eget` that calls `eget` and then uses the
-target given to it to determine the README.md file, and curl it, then do the
-ronn etc steps.
+<!-- This could just be a wrapper around `eget` that calls `eget` and then uses the -->
+<!-- target given to it to determine the README.md file, and curl it, then do the -->
+<!-- ronn etc steps. -->
 
-> But why not just read the docs in the browser??
+## BACKGROUND
+
+> Why not just read the docs in the browser??
 
 Because you're gonna google or LLM it, context switch, trigger Gemini (using a
 day's worth of household electricity), get served ads, wind up _maybe_ on the
-page you wanted, and forget to close that new tab that's eating 250 MB in your
+page you wanted, forget to close that new tab that's eating 250 MB in your
 already crawling browser, and forget what you were even doing. OR, you could
 just hit `Ctrl-h` in your terminal and be on your merry way.
+
+> But READMEs are different than man pages!
+
+Actually, I have found that the majority of popular projects' READMEs are
+loaded with great "usage" and other content. Granted, there are some unwanted
+"installation" etc sections, but they are omitted with `manget`.
 
 ## BUILT-IN HELP SYSTEMS
 
@@ -70,6 +85,23 @@ in one stroke. But then there are no docs installed. This tends to be the
 difference between `brew/dnf/apt/pacman install ...` -- those usually install
 man pages.
 
+### 4. tldr
+
+OK, there is a fourth level, if missing from man pages: concise plain
+examples. This is a little outside my scope since it's an entirely different
+set of tools and doc sources, but it's worth mentioning, and you should set it
+up. I have found [tealdeer](https://github.com/tealdeer-rs/tealdeer) to be a
+nice, small, fast implementation with great completions. Maybe worth aliasing.
+
+```shell
+% alias eg=tldr
+```
+
+**IDEA:** It might be a nice effort to turn all of the tldr listings (which
+are just markdown) into a special section of man pages, so that you could
+instead say: `man 1e git-log`. Then they could all (~5k pages)  i be packaged and
+be part of the single man system.
+
 ## IMPLEMENTATION
 
 The simplest way to get man pages (or something close in spirit to them) onto
@@ -93,6 +125,8 @@ having to install `ronn` etc. But for now there's a little POC Zsh script
 
 ## INSTALLATION
 
+(Note that this section is omitted from the `manget` man page!)
+
 There are presently some deps to install manually:
 
 - [ronn]
@@ -102,7 +136,7 @@ There are presently some deps to install manually:
 ```shell
 % eget   micahelliott/manget
 OR
-% wget https://raw.githubusercontent.com/MicahElliott/manget/refs/heads/main/bin/manget
+% wget https://raw.githubusercontent.com/MicahElliott/manget/main/bin/manget
 ```
 
 ## USAGE
@@ -189,7 +223,7 @@ INSTALLATION)
 ## PAGERS
 
 `man` runs its output through a "pager". You can change this by exporting
-`PAGER`. Here are some common ones:
+`PAGER` or `MANPAGER`. Here are some common ones:
 
 - less
 - bat
@@ -251,3 +285,4 @@ type, is not discoverable, and has to fetch every time you reference it.
 - [eget]()
 - [tldr]()
 - [gh]()
+- [mdbook-man](https://github.com/vv9k/mdbook-man) -- convert mdbook to man page

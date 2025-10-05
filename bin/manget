@@ -4,8 +4,7 @@ mgver=20251003
 
 sect=1
 destdir=~/.local/share/man/man$sect
-host='https://github.com'
-host='https://raw.githubusercontent.com'
+# host='https://raw.githubusercontent.com'
 
 if   [[ -z $1 ]]
 then print 'USAGE: manget owner/proj [exename]'; exit
@@ -21,29 +20,59 @@ if [[ -n $2 ]]; then exe=$2; else exe=$1:t; fi # 'moor'
 # reldate='XXX' # FIXME get from gh maybe, but unreliable and may not match up
 
 print "Determining $exe version"
-ver=$($exe --version | head -1)
+ver=( $( $exe --version | head -1 ) ); ver=$ver[1,3] # keep just first few items
 org="${repo:h}ʼs $ver"
 
 print 'Determining default branch'
-mainbranch=$(curl -s "https://api.github.com/repos/$repo" |jq -r '.default_branch')
+# mainbranch=$( curl -s "https://api.github.com/repos/$repo" |jq -r '.default_branch' )
+
+# FIXME Bail out if no markdown file, and look also for .mkd and .markdown (some will be .adoc or .org)
+# Or consider running pandoc to convert adoc/org to md
+# Possibilities: md, org, adoc, rst, txt
 
 # https://raw.githubusercontent.com/walles/moor/refs/heads/master/README.md
-readme=$host/$repo/refs/heads/$mainbranch/README.md
+print 'Determining which file is the README'
+
+readme=$( curl -s "https://api.github.com/repos/$repo/contents" |
+               grep '"download_url":.*README' |
+               sed -e 's/.*"https:/https:/' -e 's/".*//' )
+# readme=$host/$repo/refs/heads/$mainbranch/README.md
 destfile=$destdir/$exe.$sect.gz
+ftype=
+if   [[ $destfile:e =~ '^(md|mkd|markdown)$' ]]; then ftype=md
+elif [[ $destfile:e =~ '^(adoc|asciidoc)$' ]];   then ftype=adoc
+elif [[ $destfile:e = 'rst' ]];                 then ftype=rst
+elif [[ $destfile:e = 'org' ]];                 then ftype=org
+fi
 
 # eget $repo
 
 print "Fetching $readme to $destfile"
 # curl $readme | ronn --section $sect -r --name $cmdname --manual 'FIXME Manual Name' --pipe
 
-# TODO Upcase H2s
-# TODO Remove <code>
-# TODO Remove Installation section
+# TODO support fetching man pages from release dir (like eget does), for maintainers who create them
 
 # Alternative to ronn:
 # or use https://github.com/bmoneill/md2roff (golang)
 # or https://github.com/cpuguy83/go-md2man
 
-curl --silent $readme |
-  ronn --section $sect -r --name $exe --manual 'External User Commands' --organization $org --pipe |
-  gzip > $destfile
+text=$( curl --silent $readme )
+
+if   command -v perl >/dev/null 2>&1
+then print 'Removing "Installation" section'
+     text=$( perl -0777 -pe 's/## install.*?\n## /## /gsi' <<< $text )
+fi
+
+print 'Upper-casing titles'
+text=$( sed -r 's/^## .*/\U&/g' <<< $text )
+
+print 'Running ronn to generate roff'
+roff=$( ronn --section $sect -r --name $exe --manual "${(C)exe} README Manual" --organization $org --pipe <<< $text )
+
+print 'Removing slop and tightening bullets'
+roff=$( sed -r 's^</?code>^^g'      <<< $roff )
+# These aren't working
+# roff=$( sed    's/"(bu" 4/"(bu" 1/' <<< $roff )
+# roff=$( sed '/.IP "" 0/d' <<< $roff )
+
+gzip <<< $roff > $destfile
