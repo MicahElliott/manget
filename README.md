@@ -1,13 +1,13 @@
 # manget -- fetch and store a remote readme as local man page
 
-## SYNOPSIS
+## Synopsis
 
 ```shell
 manget [options]
 manget some/github-repo [exename]
 ```
 
-## DESCRIPTION
+## Description
 
 Fetch a man page from project `README.md` file, convert it to roff (man page
 format), and store it locally (default `~/.local/share/man/...`) for instant
@@ -17,7 +17,7 @@ viewing.
 <!-- target given to it to determine the README.md file, and curl it, then do the -->
 <!-- ronn etc steps. -->
 
-## BACKGROUND
+## Background
 
 > Why not just read the docs in the browser??
 
@@ -33,7 +33,7 @@ Actually, I have found that the majority of popular projects' READMEs are
 loaded with great "usage" and other content. Granted, there are some unwanted
 "installation" etc sections, but they are omitted with `manget`.
 
-## BUILT-IN HELP SYSTEMS
+## Built-In Help Systems
 
 I consider there to be three levels of built-in local help: here in order of
 access.
@@ -102,7 +102,7 @@ are just markdown) into a special section of man pages, so that you could
 instead say: `man 1e git-log`. Then they could all (~5k pages)  i be packaged and
 be part of the single man system.
 
-## IMPLEMENTATION
+## Implementation
 
 The simplest way to get man pages (or something close in spirit to them) onto
 your system for anything installed is something like this recipe:
@@ -123,7 +123,7 @@ I'm planning to write a small go-based utility to do these steps and avoid
 having to install `ronn` etc. But for now there's a little POC Zsh script
 (`manget`) to run these.
 
-## INSTALLATION
+## Installation
 
 (Note that this section is omitted from the `manget` man page!)
 
@@ -139,7 +139,7 @@ OR
 % wget https://raw.githubusercontent.com/MicahElliott/manget/main/bin/manget
 ```
 
-## USAGE
+## Usage
 
 ```shell
 % manget walles/moor 
@@ -162,7 +162,7 @@ You can set up Zsh to auto-run `man` (and retain your whole command line):
 % man ./myapp.1
 ```
 
-## PRIMER ON MAN
+## Primer on Man
 
 Man pages live in places like `/usr/share/man/...` and are automatically found
 by `man`. More are enabled via `MANPATH` (works like `PATH`).
@@ -179,7 +179,7 @@ crontab (1) - maintains crontab files for individual users
 crontab (5) - files used to schedule the execution of programs
 ```
 
-## ORGANIZING YOUR MAN PAGES
+## Organizing Your Man Pages
 
 You can organize your docs into multiple "pages", or just have a single page
 that contains "sections", typically `(1)` and maybe `(5)`.
@@ -216,11 +216,12 @@ From `man man`:
 These are also a great rubric for READMEs! (though may need to add
 INSTALLATION)
 
-## EXEMPLARY MAN PAGES
+## Exemplary Man Pages
 
 - `jq`
+- `fzf`
 
-## PAGERS
+## Pagers
 
 `man` runs its output through a "pager". You can change this by exporting
 `PAGER` or `MANPAGER`. Here are some common ones:
@@ -239,25 +240,25 @@ mkdir -p ~/.local/share/man/man{1..8}
 export MANPATH+=~/.local/share/man
 ```
 
-## SETTING UP KEYBINDINGS
+## Setting Up Keybindings
 
 If you like Emacs key bindings, here's a way to get those: `man lesskey`,
 see [example config](https://github.com/dLuna/config/blob/master/.lesskey).
 
 Or you could use `info` which falls back to man pages when no info page exists.
 
-## SETTING UP COLORS
+## Setting Up Colors
 
 https://unix.stackexchange.com/questions/119/colors-in-man-pages
 
-## CONVERSION FROM MARKDOWN TO ROFF
+## Conversion from Markdown To Roff
 
 - [ronn](https://github.com/rtomayko/ronn)
   Install: `sudo dnf install rubygem-ronn-ng`
 
 - `pandoc README.md -s -t man >myproj.1`
 
-## BEYOND THE README
+## Beyond the README
 
 A README's purpose is typically to get you up and running. Sometimes that's
 all that's needed.
@@ -268,11 +269,11 @@ dedicated project page, GH wiki, etc.
 The [Diátaxis](https://diataxis.fr/) approach is widely adopted and suggests a
 taxonomy. I believe they can be roughly mapped to man-page sections.
 
-## PACKAGING A SET OF MAN PAGES INTO YOUR RELEASES
+## Packaging a Set of Man Pages into Your Releases
 
 As part of releasing your binaries, you can also push a `docs.tgz` file.
 
-## RELATED TOOLING
+## Related Tooling
 
 There is already a way to view a github project readme. It looks pretty and
 does the job. However, it's slow, requires authentication, is tedious to

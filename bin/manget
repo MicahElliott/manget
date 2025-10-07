@@ -23,7 +23,7 @@ print "Determining $exe version"
 ver=( $( $exe --version | head -1 ) ); ver=$ver[1,3] # keep just first few items
 org="${repo:h}ʼs $ver"
 
-print 'Determining default branch'
+# print 'Determining default branch'
 # mainbranch=$( curl -s "https://api.github.com/repos/$repo" |jq -r '.default_branch' )
 
 # FIXME Bail out if no markdown file, and look also for .mkd and .markdown (some will be .adoc or .org)
@@ -31,23 +31,39 @@ print 'Determining default branch'
 # Possibilities: md, org, adoc, rst, txt
 
 # https://raw.githubusercontent.com/walles/moor/refs/heads/master/README.md
-print 'Determining which file is the README'
+print 'Curling to determine which file is the README'
 
 readme=$( curl -s "https://api.github.com/repos/$repo/contents" |
                grep '"download_url":.*README' |
                sed -e 's/.*"https:/https:/' -e 's/".*//' )
 # readme=$host/$repo/refs/heads/$mainbranch/README.md
 destfile=$destdir/$exe.$sect.gz
-ftype=
-if   [[ $destfile:e =~ '^(md|mkd|markdown)$' ]]; then ftype=md
-elif [[ $destfile:e =~ '^(adoc|asciidoc)$' ]];   then ftype=adoc
-elif [[ $destfile:e = 'rst' ]];                 then ftype=rst
-elif [[ $destfile:e = 'org' ]];                 then ftype=org
+
+print "Curling to fetch README: $readme"
+text=$( curl --silent $readme )
+
+ext=${(L)destfile:e}
+if   [[ $ext =~ '^(md|mkd|markdown)$' ]]
+then ftype=md
+     # No conversion needed
+elif [[ $ext =~ '^(adoc|asciidoc|asc|ad)$' ]]
+then ftype=adoc
+     print "Converting $ftype to markdown"
+     text=$( asciidoc -b docbook -o- $text | pandoc -f docbook -t markdown_strict )
+elif [[ $ext = '^(rst|rest)$' ]]
+then ftype=rst
+     print "Converting $ftype to markdown"
+     text=$( pandoc -f rst -t markdown $text )
+elif [[ $ext = '^(org)$' ]]
+then ftype=org
+     print "Converting $ftype to markdown"
+     text=$( pandoc -f org -t markdown $text )
 fi
+# if [[ $ftype != 'md' ]]; then print "ERROR: only markdown is enabled, not $ftype"; exit 1; fi
 
 # eget $repo
 
-print "Fetching $readme to $destfile"
+# print "Fetching $readme to $destfile"
 # curl $readme | ronn --section $sect -r --name $cmdname --manual 'FIXME Manual Name' --pipe
 
 # TODO support fetching man pages from release dir (like eget does), for maintainers who create them
@@ -56,11 +72,18 @@ print "Fetching $readme to $destfile"
 # or use https://github.com/bmoneill/md2roff (golang)
 # or https://github.com/cpuguy83/go-md2man
 
-text=$( curl --silent $readme )
-
 if   command -v perl >/dev/null 2>&1
 then print 'Removing "Installation" section'
      text=$( perl -0777 -pe 's/## install.*?\n## /## /gsi' <<< $text )
+fi
+
+if   command -v tldr >/dev/null 2>&1          # check if tldr installed
+then if   rawex=$( tldr --raw --quiet $exe )  # check if tldr entry exists
+     then print 'Pulling in found TLDR examples for new section'
+          examples=$( print "\n\n## EXAMPLES\n\n" )
+          examples+=$( sed -r '/^# /,/^> /d' <<< $rawex | sed '1d' )
+          text+=$examples
+     fi
 fi
 
 print 'Upper-casing titles'
