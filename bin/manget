@@ -42,22 +42,25 @@ destfile=$destdir/$exe.$sect.gz
 print "Curling to fetch README: $readme"
 text=$( curl --silent $readme )
 
-ext=${(L)destfile:e}
+ext=${(L)readme:e}
 if   [[ $ext =~ '^(md|mkd|markdown)$' ]]
 then ftype=md
      # No conversion needed
 elif [[ $ext =~ '^(adoc|asciidoc|asc|ad)$' ]]
 then ftype=adoc
      print "Converting $ftype to markdown"
-     text=$( asciidoc -b docbook -o- $text | pandoc -f docbook -t markdown_strict )
+     # print "asciidoc -b docbook -o- $text | pandoc -f docbook -t markdown_strict"
+     text=$( asciidoc -b docbook -o- - <<<$text | pandoc -f docbook -t markdown_strict )
 elif [[ $ext = '^(rst|rest)$' ]]
 then ftype=rst
      print "Converting $ftype to markdown"
-     text=$( pandoc -f rst -t markdown $text )
+     text=$( pandoc -f rst -t markdown <<<$text )
 elif [[ $ext = '^(org)$' ]]
 then ftype=org
      print "Converting $ftype to markdown"
-     text=$( pandoc -f org -t markdown $text )
+     text=$( pandoc -f org -t markdown <<<$text )
+else print "Unrecognized file type extension: $destfile"
+     exit 1
 fi
 # if [[ $ftype != 'md' ]]; then print "ERROR: only markdown is enabled, not $ftype"; exit 1; fi
 

@@ -218,6 +218,8 @@ INSTALLATION)
 
 ## Exemplary Man Pages
 
+There are some great man pages that can be modeled after. Here are a few:
+
 - `jq`
 - `fzf`
 
@@ -258,16 +260,30 @@ https://unix.stackexchange.com/questions/119/colors-in-man-pages
 
 - `pandoc README.md -s -t man >myproj.1`
 
+## Tips/assumptions on READMEs
+
+- It is assumed that the README you wish to process has the main sections
+  grouped into second level headings (`H2`).
+- Start with _Synopsis_, then _Descrption_ sections.
+- Put an _Examples_ section at the end.
+- Use `manget` to package a `yourtool.1` file that is available on your
+  _Realease_ pages.
+- Use [markdownlint](https://github.com/markdownlint/markdownlint)
+- Use [flymake-mdl](https://github.com/MicahElliott/flymake-mdl) if Emacs
+
 ## Beyond the README
 
-A README's purpose is typically to get you up and running. Sometimes that's
-all that's needed.
+A README's purpose is typically to get you up and running, with some sales
+patch and explanation. Sometimes that's all that's needed. But in practice,
+READMEs are a gold mine of background, usage, FAQs, etc.
 
 There are other types and sources of docs for a given project: blog post,
 dedicated project page, GH wiki, etc.
 
-The [Diátaxis](https://diataxis.fr/) approach is widely adopted and suggests a
-taxonomy. I believe they can be roughly mapped to man-page sections.
+The [Diátaxis](https://diataxis.fr/start-here) approach is widely adopted and
+suggests a taxonomy. Man pages tend to be of _Reference_ type, somewhat like
+API docs; whereas READMEs are often a mix of at least a couple types, leaning
+toward _Explanation_.
 
 ## Packaging a Set of Man Pages into Your Releases
 
@@ -287,3 +303,7 @@ type, is not discoverable, and has to fetch every time you reference it.
 - [tldr]()
 - [gh]()
 - [mdbook-man](https://github.com/vv9k/mdbook-man) -- convert mdbook to man page
+
+## License
+
+This project is licensed under the terms of the MIT license.
