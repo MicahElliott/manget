@@ -91,16 +91,14 @@ OK, there is a fourth level, if missing from man pages: concise plain
 examples. This is a little outside my scope since it's an entirely different
 set of tools and doc sources, but it's worth mentioning, and you should set it
 up. I have found [tealdeer](https://github.com/tealdeer-rs/tealdeer) to be a
-nice, small, fast implementation with great completions. Maybe worth aliasing.
+nice, small, fast implementation with great completions. Maybe worth aliasing
+as `eg`. In fact, `manget` will append the `tldr` examples listing to the
+generated man page if it finds it.
 
-```shell
-% alias eg=tldr
-```
-
-**IDEA:** It might be a nice effort to turn all of the tldr listings (which
-are just markdown) into a special section of man pages, so that you could
-instead say: `man 1e git-log`. Then they could all (~5k pages)  i be packaged and
-be part of the single man system.
+<!-- **IDEA:** It might be a nice effort to turn all of the tldr listings (which -->
+<!-- are just markdown) into a special section of man pages, so that you could -->
+<!-- instead say: `man 1e git-log`. Then they could all (~5k pages)  i be packaged and -->
+<!-- be part of the single man system. -->
 
 ## Implementation
 
