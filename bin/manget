@@ -9,9 +9,8 @@
 # or https://github.com/cpuguy83/go-md2man
 
 mgver=20251008
-
 sect=1r
-destdir=~/.local/share/man/man$sect
+
 # host='https://raw.githubusercontent.com'
 
 if   [[ -z $1 || $1 = '--help' ]]
@@ -25,6 +24,13 @@ fi
 if [[ $1 = '--version' ]]; then print "manget v$mgver"; exit ; fi
 
 repo=$1 # 'walles/moor'
+
+if   [[ -v MANGET_LOCALGEN ]]
+then destdir=./doc/man/man$sect
+     localgen=true
+else destdir=~/.local/share/man/man$sect
+fi
+mkdir -p $destdir
 
 # Get main executable name
 if [[ -n $2 ]]; then exe=$2; else exe=$1:t; fi # 'moor'
@@ -93,6 +99,8 @@ text=$( sed -r 's/^## .*/\U&/g' <<< $text )
 
 print 'Running ronn to generate roff'
 roff=$( ronn --section $sect -r --name $exe --manual "${(C)exe} README Manual" --organization $org --pipe <<< $text )
+# For local generation:
+print -- ronn --section $sect -r --name $exe --manual "${(C)exe} README Manual" --organization $org --pipe >doc/$exe.$sect
 
 print 'Removing slop and tightening bullets'
 roff=$( sed -r 's^</?code>^^g'      <<< $roff )

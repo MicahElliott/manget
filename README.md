@@ -7,11 +7,10 @@ manget [--help|--version]
 manget some/github-repo [exename]
 ```
 
-## Description
-
-Fetch a man page from a project `README.md` file, convert it to roff (man page
+Fetch a project `README` file as man page, convert it to roff (man page
 format), and store it locally (default `~/.local/share/man/somecommand.1r.gz`)
-for instant viewing with `man`.
+for instant viewing with `man`. README format can be Markdown, Asciidoc, ReST,
+or Org.
 
 <!-- This could just be a wrapper around `eget` that calls `eget` and then uses the -->
 <!-- target given to it to determine the README.md file, and curl it, then do the -->
@@ -19,13 +18,13 @@ for instant viewing with `man`.
 
 ## Background
 
-> Why not just read the docs in the browser??
+> Why not just find/read the docs in the browser??
 
 Because you're gonna google or LLM it, context switch, trigger Gemini (using a
 day's worth of household electricity), get served ads, wind up _maybe_ on the
 page you wanted, forget to close that new tab that's eating 250 MB in your
 already crawling browser, and forget what you were even doing. OR, you could
-just hit `Ctrl-h` in your terminal and be on your merry way.
+just hit `M-h` in your terminal and be on your merry way.
 
 > But READMEs are different than man pages!
 
@@ -106,20 +105,21 @@ The simplest way to get man pages (or something close in spirit to them) onto
 your system for anything installed is something like this recipe:
 
 ```shell
-dest=~/.local/share/man sect=1
+sect=1r
+dest=~/.local/share/man/$sect
 proj='walles/moor'
 host='https://github.com/'
 cmdname='Moor Pager'
 exe='moor'
-# eget $proj
+# eget $proj  # install it if haven't already
 curl $host/$proj/README.md |
-  ronn --section $sect -r --name $cmdname --manual 'FIXME Manual Name' --pipe |
-  gzip >$exe.$sect.gz
+  ronn --section $sect -r --name $cmdname --manual 'XXX Manual Name' --pipe |
+  gzip >$dest/$exe.$sect.gz
 ```
 
-I'm planning to write a small go-based utility to do these steps and avoid
-having to install `ronn` etc. But for now there's a little POC Zsh script
-(`manget`) to run these.
+(I may write a small go-based utility to do these steps and avoid having to
+install `ronn` etc. But for now this is a little Zsh script (`manget`) to
+run these.)
 
 ## Installation
 
@@ -127,7 +127,10 @@ having to install `ronn` etc. But for now there's a little POC Zsh script
 
 There are presently some deps to install manually:
 
-- [ronn]
+- [ronn](https://github.com/rtomayko/ronn) -- for converting md-to-roff
+- [pandoc]() -- [optional] to support adoc/org/rst
+- [asciidoc]() -- [optional]
+- [tldr]() -- [optional] if you want more examples in man pages
 
 `manget` is just a tiny Zsh script. Put it on your `PATH`.
 
@@ -140,7 +143,7 @@ OR
 ## Usage
 
 ```shell
-% manget walles/moor 
+% manget walles/moor
 ```
 
 ### Zsh `run-help` setup
