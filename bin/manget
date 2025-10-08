@@ -1,20 +1,32 @@
 #! /bin/zsh
 
-mgver=20251003
+# manget -- Fetch and store a remote readme from github repo as local man page.
 
-sect=1
+# TODO support fetching man pages from release dir (like eget does), for maintainers who create them
+
+# Alternative to ronn:
+# or use https://github.com/bmoneill/md2roff (golang)
+# or https://github.com/cpuguy83/go-md2man
+
+mgver=20251008
+
+sect=1r
 destdir=~/.local/share/man/man$sect
 # host='https://raw.githubusercontent.com'
 
-if   [[ -z $1 ]]
-then print 'USAGE: manget owner/proj [exename]'; exit
+if   [[ -z $1 || $1 = '--help' ]]
+then print 'USAGE: manget owner/proj [exename]'
+     print 'Fetch and store a remote readme from github repo as local man page.'
+     print '\nExample:'
+     print '  manget walles/moor  # get moor pager man page'
+     exit
 fi
 
 if [[ $1 = '--version' ]]; then print "manget v$mgver"; exit ; fi
 
 repo=$1 # 'walles/moor'
 
-# TODO maybe use gh cli to fetch these
+# Get main executable name
 if [[ -n $2 ]]; then exe=$2; else exe=$1:t; fi # 'moor'
 # cmdname=$3 # 'Moor Pager'
 # reldate='XXX' # FIXME get from gh maybe, but unreliable and may not match up
@@ -23,15 +35,12 @@ print "Determining $exe version"
 ver=( $( $exe --version | head -1 ) ); ver=$ver[1,3] # keep just first few items
 org="${repo:h}ʼs $ver"
 
+# No need  to do this since GH tells us precisely which file is README
 # print 'Determining default branch'
 # mainbranch=$( curl -s "https://api.github.com/repos/$repo" |jq -r '.default_branch' )
 
-# FIXME Bail out if no markdown file, and look also for .mkd and .markdown (some will be .adoc or .org)
-# Or consider running pandoc to convert adoc/org to md
-# Possibilities: md, org, adoc, rst, txt
-
 # https://raw.githubusercontent.com/walles/moor/refs/heads/master/README.md
-print 'Curling to determine which file is the README'
+print 'Curling github API to determine which file is the README'
 
 readme=$( curl -s "https://api.github.com/repos/$repo/contents" |
                grep '"download_url":.*README' |
@@ -62,18 +71,8 @@ then ftype=org
 else print "Unrecognized file type extension: $destfile"
      exit 1
 fi
-# if [[ $ftype != 'md' ]]; then print "ERROR: only markdown is enabled, not $ftype"; exit 1; fi
 
 # eget $repo
-
-# print "Fetching $readme to $destfile"
-# curl $readme | ronn --section $sect -r --name $cmdname --manual 'FIXME Manual Name' --pipe
-
-# TODO support fetching man pages from release dir (like eget does), for maintainers who create them
-
-# Alternative to ronn:
-# or use https://github.com/bmoneill/md2roff (golang)
-# or https://github.com/cpuguy83/go-md2man
 
 if   command -v perl >/dev/null 2>&1
 then print 'Removing "Installation" section'
@@ -97,7 +96,7 @@ roff=$( ronn --section $sect -r --name $exe --manual "${(C)exe} README Manual" -
 
 print 'Removing slop and tightening bullets'
 roff=$( sed -r 's^</?code>^^g'      <<< $roff )
-# These aren't working
+# These aren't working to tighten up bullets
 # roff=$( sed    's/"(bu" 4/"(bu" 1/' <<< $roff )
 # roff=$( sed '/.IP "" 0/d' <<< $roff )
 

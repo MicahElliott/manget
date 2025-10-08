@@ -3,15 +3,15 @@
 ## Synopsis
 
 ```shell
-manget [options]
+manget [--help|--version]
 manget some/github-repo [exename]
 ```
 
 ## Description
 
-Fetch a man page from project `README.md` file, convert it to roff (man page
-format), and store it locally (default `~/.local/share/man/...`) for instant
-viewing.
+Fetch a man page from a project `README.md` file, convert it to roff (man page
+format), and store it locally (default `~/.local/share/man/somecommand.1r.gz`)
+for instant viewing with `man`.
 
 <!-- This could just be a wrapper around `eget` that calls `eget` and then uses the -->
 <!-- target given to it to determine the README.md file, and curl it, then do the -->
@@ -264,18 +264,20 @@ https://unix.stackexchange.com/questions/119/colors-in-man-pages
 
 - It is assumed that the README you wish to process has the main sections
   grouped into second level headings (`H2`).
+- Put a very short description into your `H1` title
 - Start with _Synopsis_, then _Descrption_ sections.
 - Put an _Examples_ section at the end.
 - Use `manget` to package a `yourtool.1` file that is available on your
-  _Realease_ pages.
+  _Realeases_ pages.
 - Use [markdownlint](https://github.com/markdownlint/markdownlint)
 - Use [flymake-mdl](https://github.com/MicahElliott/flymake-mdl) if Emacs
 
 ## Beyond the README
 
 A README's purpose is typically to get you up and running, with some sales
-patch and explanation. Sometimes that's all that's needed. But in practice,
-READMEs are a gold mine of background, usage, FAQs, etc.
+pitch and explanation. Sometimes that's all that's needed. But in practice,
+READMEs are a gold mine of background, usage, FAQs, etc. And yet man pages are
+rarely found.
 
 There are other types and sources of docs for a given project: blog post,
 dedicated project page, GH wiki, etc.
@@ -287,13 +289,15 @@ toward _Explanation_.
 
 ## Packaging a Set of Man Pages into Your Releases
 
-As part of releasing your binaries, you can also push a `docs.tgz` file.
+As part of releasing your binaries, you can also push a `docs.tgz` file. (TBD
+by other tooling, maybe)
 
 ## Related Tooling
 
-There is already a way to view a github project readme. It looks pretty and
-does the job. However, it's slow, requires authentication, is tedious to
-type, is not discoverable, and has to fetch every time you reference it.
+There is already a way to view a github project readme with `gh`. It looks
+pretty and does the job. However, it's slow, requires authentication, is
+tedious to type, is not discoverable, and has to fetch every time you
+reference it.
 
 ```shell
 % gh repo view rtomayko/ronn
