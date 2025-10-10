@@ -25,37 +25,50 @@ if [[ $1 = '--version' ]]; then print "manget v$mgver"; exit ; fi
 
 repo=$1 # 'walles/moor'
 
-if   [[ -v MANGET_LOCALGEN ]]
-then destdir=./doc/man/man$sect
-     localgen=true
-else destdir=~/.local/share/man/man$sect
-fi
+destdir=${MANGET_DESTDIR-~/.local/share/man/man$sect} # or ./docs/man/man$sect
+# if   [[ -v MANGET_DESTDIR ]]
+# then destdir=./docs/man/man$sect
+# else destdir=~/.local/share/man/man$sect
+# fi
 mkdir -p $destdir
 
 # Get main executable name
 if [[ -n $2 ]]; then exe=$2; else exe=$1:t; fi # 'moor'
-# cmdname=$3 # 'Moor Pager'
 # reldate='XXX' # FIXME get from gh maybe, but unreliable and may not match up
+destfile=$destdir/$exe.$sect.gz
 
 print "Determining $exe version"
 ver=( $( $exe --version | head -1 ) ); ver=$ver[1,3] # keep just first few items
 org="${repo:h}ʼs $ver"
 
-# No need  to do this since GH tells us precisely which file is README
-# print 'Determining default branch'
-# mainbranch=$( curl -s "https://api.github.com/repos/$repo" |jq -r '.default_branch' )
+# Fetch README if necessary and fill contents into text
+fetch_readme() {
+     # No need  to do this since GH tells us precisely which file is README
+     # print 'Determining default branch'
+     # mainbranch=$( curl -s "https://api.github.com/repos/$repo" |jq -r '.default_branch' )
 
-# https://raw.githubusercontent.com/walles/moor/refs/heads/master/README.md
-print 'Curling github API to determine which file is the README'
+     if   [[ -v MANGET_SOURCEPATH ]]
+     then sourcepath=$MANGET_SOURCEPATH # can be http... or not for local
+          readme=$sourcepath
+          if   [[ $sourcepath =~ '^http' ]]
+          then print "Fetching source path: $sourcepath"
+               text=$( curl --silent $sourcepath )
+          else print "Using local source path: $sourcepath"
+               text=$( cat $sourcepath)
+          fi
+     else # https://raw.githubusercontent.com/walles/moor/refs/heads/master/README.md
+          print 'Curling github API to determine which file is the README'
+          readme=$( curl -s "https://api.github.com/repos/$repo/contents" |
+                         grep '"download_url":.*README' |
+                         sed -e 's/.*"https:/https:/' -e 's/".*//' )
+          # readme=$host/$repo/refs/heads/$mainbranch/README.md
+          print "Curling to fetch README: $readme"
+          text=$( curl --silent $readme )
+     fi
+     print "Using README source as: $readme"
+}
 
-readme=$( curl -s "https://api.github.com/repos/$repo/contents" |
-               grep '"download_url":.*README' |
-               sed -e 's/.*"https:/https:/' -e 's/".*//' )
-# readme=$host/$repo/refs/heads/$mainbranch/README.md
-destfile=$destdir/$exe.$sect.gz
-
-print "Curling to fetch README: $readme"
-text=$( curl --silent $readme )
+fetch_readme
 
 ext=${(L)readme:e}
 if   [[ $ext =~ '^(md|mkd|markdown)$' ]]
@@ -100,7 +113,7 @@ text=$( sed -r 's/^## .*/\U&/g' <<< $text )
 print 'Running ronn to generate roff'
 roff=$( ronn --section $sect -r --name $exe --manual "${(C)exe} README Manual" --organization $org --pipe <<< $text )
 # For local generation:
-print -- ronn --section $sect -r --name $exe --manual "${(C)exe} README Manual" --organization $org --pipe >doc/$exe.$sect
+print -- ronn --section $sect -r --name $exe --manual "${(C)exe} README Manual" --organization $org --pipe >docs/$exe.$sect
 
 print 'Removing slop and tightening bullets'
 roff=$( sed -r 's^</?code>^^g'      <<< $roff )
@@ -108,4 +121,5 @@ roff=$( sed -r 's^</?code>^^g'      <<< $roff )
 # roff=$( sed    's/"(bu" 4/"(bu" 1/' <<< $roff )
 # roff=$( sed '/.IP "" 0/d' <<< $roff )
 
+print "Writing roff: $destfile"
 gzip <<< $roff > $destfile

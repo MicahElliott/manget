@@ -7,10 +7,17 @@ manget [--help|--version]
 manget some/github-repo [exename]
 ```
 
-Fetch a project `README` file as man page, convert it to roff (man page
-format), and store it locally (default `~/.local/share/man/somecommand.1r.gz`)
-for instant viewing with `man`. README format can be Markdown, Asciidoc, ReST,
-or Org.
+**Fetch** a project `README` file (to become man page), **convert** it to roff
+(man page format), **augment** it to be more "manly", and **store** it locally
+(default eg, `~/.local/share/man/somecommand.1r.gz`) for instant viewing with
+`man`. Readme input format can be Markdown, Asciidoc, ReST, or Org.
+
+Although Manget's primary use is fetching random project man pages, it can
+also be pointed to any other file by setting `MANGET_SOURCEPATH` to a URI or
+local file path; the latter being useful for packaging up your own Readme (or
+other doc) as distributable man pages.
+
+Manget's remote fetch only supports github repos (other hosts could be added).
 
 <!-- This could just be a wrapper around `eget` that calls `eget` and then uses the -->
 <!-- target given to it to determine the README.md file, and curl it, then do the -->
@@ -39,17 +46,16 @@ access.
 
 ### 1. Tab completion
 
-In Zsh (and other shells) the completion system is nearly comprehensive. In
-fact, this is probably the number one reason I remain using Zsh (among
-others). Many modern CLI-parsers libs can even generate completion files for
-Zsh. Whenever you can't find one, you can ask Zsh to generate a pretty good
-one simply with (for `ronn` command in this example):
+In Zsh (and other shells) the completion system is nearly comprehensive in
+option coverage. In fact, this is probably the number one reason I adore
+using Zsh (among others). Many modern CLI-parser libs can even generate
+completion files for Zsh. Whenever you can't find one, you can ask Zsh to
+generate a pretty good one simply with (for `ronn` command in this example):
 
 ```shell
 % compdef _gnu_generic ronn # collect these in your .zshrc equivalent
 
 % ronn -«TAB»
---- option
 --date              -- published date in YYYY-MM-DD format (bottom-center)
 -E                  -- specify the encoding files are in (default is UTF-8)
 --fragment      -f  -- generate HTML fragment
@@ -67,14 +73,14 @@ tools like `git` take it a step further and distinguish those two, opening a
 man page for the latter.) So `-h` is the go-to second level help that tells
 you more about its args and basic usage.
 
-### 3. Man page
+### 3. Man page (manget's focus!)
 
 Man pages are very helpful documents to tell you all about the command. Try
 `man ls` to see a fine example of `ls`'s section-1 page (there can be many
 sections, each with designated purpose). There are 30,000 man pages on my
 semi-minimal system without even trying! The problem is that many newer tools
 don't have man pages! And that's what `manget` is all about. Because they do
-all have at least READMEs that tend to serve about the same purpose.
+all have at least READMEs that often serve a similar purpose.
 
 The beauty of modern language tooling (golang, rust, etc) is that they can
 build standalone executables, instead of a tedious and breakage-prone things
@@ -91,35 +97,13 @@ examples. This is a little outside my scope since it's an entirely different
 set of tools and doc sources, but it's worth mentioning, and you should set it
 up. I have found [tealdeer](https://github.com/tealdeer-rs/tealdeer) to be a
 nice, small, fast implementation with great completions. Maybe worth aliasing
-as `eg`. In fact, `manget` will append the `tldr` examples listing to the
+as `eg`. In fact, `manget` will append the `tldr` _EXAMPLES_ listing to the
 generated man page if it finds it.
 
 <!-- **IDEA:** It might be a nice effort to turn all of the tldr listings (which -->
 <!-- are just markdown) into a special section of man pages, so that you could -->
 <!-- instead say: `man 1e git-log`. Then they could all (~5k pages)  i be packaged and -->
 <!-- be part of the single man system. -->
-
-## Implementation
-
-The simplest way to get man pages (or something close in spirit to them) onto
-your system for anything installed is something like this recipe:
-
-```shell
-sect=1r
-dest=~/.local/share/man/$sect
-proj='walles/moor'
-host='https://github.com/'
-cmdname='Moor Pager'
-exe='moor'
-# eget $proj  # install it if haven't already
-curl $host/$proj/README.md |
-  ronn --section $sect -r --name $cmdname --manual 'XXX Manual Name' --pipe |
-  gzip >$dest/$exe.$sect.gz
-```
-
-(I may write a small go-based utility to do these steps and avoid having to
-install `ronn` etc. But for now this is a little Zsh script (`manget`) to
-run these.)
 
 ## Installation
 
@@ -168,7 +152,7 @@ You can set up Zsh to auto-run `man` (and retain your whole command line):
 Man pages live in places like `/usr/share/man/...` and are automatically found
 by `man`. More are enabled via `MANPATH` (works like `PATH`).
 
-The [ronn]() page describes well why man pages are so valuable.
+The `ronn(1)` man page describes well why man pages are so valuable.
 
 ```shell
 % man man
@@ -223,6 +207,11 @@ There are some great man pages that can be modeled after. Here are a few:
 
 - `jq`
 - `fzf`
+- `curl`
+
+And here is a collection of
+[awesome readme](https://github.com/matiassingers/awesome-readme#articles)
+resources.
 
 ## Pagers
 
@@ -237,6 +226,9 @@ There are some great man pages that can be modeled after. Here are a few:
 - woman (part of emacs)
 
 ## MANPATH
+
+Man can look in other places for man pages. Set `MANPATH` just as you normally
+use `PATH`.
 
 ```shell
 mkdir -p ~/.local/share/man/man{1..8}
@@ -254,7 +246,32 @@ Or you could use `info` which falls back to man pages when no info page exists.
 
 https://unix.stackexchange.com/questions/119/colors-in-man-pages
 
-## Conversion from Markdown To Roff
+## Implementation
+
+The simplest way to get man pages (or something close in spirit to them) onto
+your system for anything installed is something like this recipe, which is
+close to what `manget` does:
+
+```shell
+sect=1r
+dest=~/.local/share/man/$sect
+proj='walles/moor'
+host='https://github.com/'
+cmdname='Moor Pager'
+exe='moor'
+# eget $proj  # install it if haven't already
+curl $host/$proj/README.md |
+  # ... do some eliding and massaging ... |
+  ronn --section $sect -r --name $cmdname --manual 'XXX Manual Name' --pipe |
+  # ... more massaging ... |
+  gzip >$dest/$exe.$sect.gz
+```
+
+(I may write a small go-based utility to do these steps and avoid having to
+install `ronn` etc. But for now this project is just a little Zsh script
+(`manget`) to run these.)
+
+## Conversion Techniques for Markdown To Roff
 
 - [ronn](https://github.com/rtomayko/ronn)
   Install: `sudo dnf install rubygem-ronn-ng`
@@ -277,8 +294,8 @@ https://unix.stackexchange.com/questions/119/colors-in-man-pages
 
 A README's purpose is typically to get you up and running, with some sales
 pitch and explanation. Sometimes that's all that's needed. But in practice,
-READMEs are a gold mine of background, usage, FAQs, etc. And yet man pages are
-rarely found.
+READMEs are often a gold mine of background, usage, FAQs, etc. And yet man
+pages are rarely found.
 
 There are other types and sources of docs for a given project: blog post,
 dedicated project page, GH wiki, etc.
@@ -308,6 +325,7 @@ reference it.
 - [tldr]()
 - [gh]()
 - [mdbook-man](https://github.com/vv9k/mdbook-man) -- convert mdbook to man page
+- [goman](https://appliedgo.net/goman/) (discovered later)
 
 ## License
 
