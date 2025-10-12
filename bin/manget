@@ -63,7 +63,7 @@ fetch_readme() {
           print 'Curling github API to determine which file is the README'
           readme=$( curl -s "https://api.github.com/repos/$repo/contents" |
                          grep '"download_url":.*README' |
-                         sed -e 's/.*"https:/https:/' -e 's/".*//' )
+                         sed -e 's/.*"https:/https:/' -e 's/".*//' | head -1 )
           # readme=$host/$repo/refs/heads/$mainbranch/README.md
           print "Curling to fetch README: $readme"
           text=$( curl --silent $readme )
