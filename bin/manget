@@ -22,7 +22,7 @@ then print 'USAGE: manget owner/proj [exename]'
      exit
 fi
 
-if [[ $1 = '--version' ]]; then print "manget v$mgver"; exit ; fi
+if [[ $1 = '--version' ]]; then print "manget $mgver"; exit ; fi
 
 repo=$1 # 'walles/moor'
 
@@ -41,8 +41,8 @@ if [[ -n $2 ]]; then exe=$2; else exe=$1:t; fi # 'moor'
 destfile=$destdir/$exe.$sect.gz
 
 print "Determining $exe version"
-ver=( $( $exe --version | head -1 ) ); ver=$ver[1,3] # keep just first few items
-org="${repo:h}ʼs $ver"
+ver=( $( $exe --version | head -1 ) )
+org="${repo:h}ʼs $ver[1,4]" # keep just first few items
 
 # Fetch README if necessary and fill contents into text
 fetch_readme() {
@@ -64,7 +64,6 @@ fetch_readme() {
           readme=$( curl -s "https://api.github.com/repos/$repo/contents" |
                          grep '"download_url":.*README' |
                          sed -e 's/.*"https:/https:/' -e 's/".*//' | head -1 )
-          # readme=$host/$repo/refs/heads/$mainbranch/README.md
           print "Curling to fetch README: $readme"
           text=$( curl --silent $readme )
      fi
