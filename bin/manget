@@ -50,8 +50,8 @@ fetch_readme() {
      # print 'Determining default branch'
      # mainbranch=$( curl -s "https://api.github.com/repos/$repo" |jq -r '.default_branch' )
 
-     if   [[ -v MANGET_SOURCEPATH ]]
-     then sourcepath=$MANGET_SOURCEPATH # can be http... or not for local
+     if   [[ -v MANGET_SOURCEDOC ]]
+     then sourcepath=$MANGET_SOURCEDOC # can be http... or not for local
           readme=$sourcepath
           if   [[ $sourcepath =~ '^http' ]]
           then print "Fetching source path: $sourcepath"

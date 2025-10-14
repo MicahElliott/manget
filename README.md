@@ -147,6 +147,13 @@ You can set up Zsh to auto-run `man` (and retain your whole command line):
 % man ./myapp.1
 ```
 
+## Ennvironment
+
+- `MANGET_SOURCEDOC` — input doc; defaults to `$repo/README.xxx` and can be set
+  to something like a local file: `./README.md`
+
+- `MANGET_DESTDIR` — output dir; defaults to `~/.local/man`
+
 ## Primer on Man
 
 Man pages live in places like `/usr/share/man/...` and are automatically found
