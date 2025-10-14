@@ -8,8 +8,8 @@
 # or use https://github.com/bmoneill/md2roff (golang)
 # or https://github.com/cpuguy83/go-md2man
 
-mgver=v2025.10.10
-sect=1r
+mgver=v2025.10.14
+sect=1 # was using 1r but stupid macos man doesn't like it
 
 # host='https://raw.githubusercontent.com'
 
@@ -115,7 +115,7 @@ text=$( sed -r 's/^## .*/\U&/g' <<< $text )
 print 'Running ronn to generate roff'
 roff=$( ronn --section $sect -r --name $exe --manual "${(C)exe} README Manual" --organization $org --pipe <<< $text )
 # For local generation:
-print -- ronn --section $sect -r --name $exe --manual "${(C)exe} README Manual" --organization $org --pipe >docs/$exe.$sect
+# print -- ronn --section $sect -r --name $exe --manual "${(C)exe} README Manual" --organization $org --pipe >docs/$exe.$sect
 
 print 'Removing slop and tightening bullets'
 roff=$( sed -r 's^</?code>^^g'      <<< $roff )
@@ -125,3 +125,5 @@ roff=$( sed -r 's^</?code>^^g'      <<< $roff )
 
 print "Writing roff: $destfile"
 gzip <<< $roff > $destfile
+
+[[ -z $MANPATH ]] && print "You may need to set your MANPATH to $destdirbase"

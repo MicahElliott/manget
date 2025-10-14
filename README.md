@@ -112,9 +112,9 @@ generated man page if it finds it.
 There are presently some deps to install manually:
 
 - [ronn](https://github.com/rtomayko/ronn) -- for converting md-to-roff
-- [pandoc]() -- [optional] to support adoc/org/rst
-- [asciidoc]() -- [optional]
-- [tldr]() -- [optional] if you want more examples in man pages
+- [pandoc](https://github.com/jgm/pandoc/blob/main/INSTALL.md) -- [optional] to support adoc/org/rst
+- [asciidoc](https://asciidoc.org/) -- [optional]
+- [tldr](https://github.com/tealdeer-rs/tealdeer) -- [optional] if you want more examples in man pages
 
 `manget` is just a tiny Zsh script. Put it on your `PATH`.
 
@@ -124,9 +124,16 @@ OR
 % wget https://raw.githubusercontent.com/MicahElliott/manget/main/bin/manget
 ```
 
+### MacOS
+
+```shell
+% brew install ronn asciidoc pandoc tealdeer
+```
+
 ## Usage
 
 ```shell
+% MANPATH=$MANPATH:~/.local/share/man # put in your shell config file
 % manget walles/moor
 ```
 
